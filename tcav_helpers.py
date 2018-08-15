@@ -182,7 +182,7 @@ def get_acts_from_images(imgs, model, bottleneck_name):
 
 def get_imgs_and_acts_save(model, bottleneck_name, img_paths, acts_path, img_shape, max_images=500):
     """Get images from files, process acts and saves.
-  
+
   Args:
     model: a model instance
     bottleneck_name: name of the bottleneck that activations are from
@@ -190,7 +190,7 @@ def get_imgs_and_acts_save(model, bottleneck_name, img_paths, acts_path, img_sha
     acts_path: where to store activations
     img_shape: shape of the image.
     max_images: maximum number of images to save to acts_path
-  
+
   Returns:
     success or not.
   """
