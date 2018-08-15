@@ -22,7 +22,7 @@ import os
 
 
 def create_session(timeout=10000, interactive=True):
-  """Create a tf session for the model.
+    """Create a tf session for the model.
   # This function is slight motification of code written by Alex Mordvintsev
 
   Args:
@@ -31,25 +31,23 @@ def create_session(timeout=10000, interactive=True):
   Returns:
     TF session.
   """
-  graph = tf.Graph()
-  config = tf.ConfigProto()
-  config.gpu_options.allow_growth = True
-  config.operation_timeout_in_ms = int(timeout*1000)
-  if interactive:
-    return tf.InteractiveSession(graph=graph, config=config)
-  else:
-    return tf.Session(graph=graph, config=config)
+    graph = tf.Graph()
+    config = tf.ConfigProto()
+    config.gpu_options.allow_growth = True
+    config.operation_timeout_in_ms = int(timeout * 1000)
+    if interactive:
+        return tf.InteractiveSession(graph=graph, config=config)
+    else:
+        return tf.Session(graph=graph, config=config)
 
 
 def flatten(nested_list):
-  """Flatten a nested list."""
-  return [item for a_list in nested_list for item in a_list]
+    """Flatten a nested list."""
+    return [item for a_list in nested_list for item in a_list]
 
 
-def process_what_to_run_expand(pairs_to_test,
-                               random_counterpart,
-                               num_random_exp=100):
-  """Get concept vs. random or random vs. random pairs to run.
+def process_what_to_run_expand(pairs_to_test, random_counterpart, num_random_exp=100):
+    """Get concept vs. random or random vs. random pairs to run.
 
     Given set of target, list of concept pairs, expand them to include
      random pairs. For instance [(t1, [c1, c2])...] becomes
@@ -68,32 +66,32 @@ def process_what_to_run_expand(pairs_to_test,
     new_pairs_to_test: expanded
   """
 
-  new_pairs_to_test = []
-  for (target, concept_set) in pairs_to_test:
-    new_pairs_to_test_t = []
-    # if only one element was given, this is to test with random.
-    if len(concept_set) == 1:
-      i = 0
-      while len(new_pairs_to_test_t) < min(100, num_random_exp):
-        # make sure that we are not comparing the same thing to each other.
-        if concept_set[0] != 'random500_{}'.format(
-            i) and random_counterpart != 'random500_{}'.format(i):
-          new_pairs_to_test_t.append(
-              (target, [concept_set[0], 'random500_{}'.format(i)]))
-        i += 1
-    elif len(concept_set) > 1:
-      new_pairs_to_test_t.append((target, concept_set))
-    else:
-      tf.logging.info('PAIR NOT PROCCESSED')
-    new_pairs_to_test.extend(new_pairs_to_test_t)
+    new_pairs_to_test = []
+    for (target, concept_set) in pairs_to_test:
+        new_pairs_to_test_t = []
+        # if only one element was given, this is to test with random.
+        if len(concept_set) == 1:
+            i = 0
+            while len(new_pairs_to_test_t) < min(100, num_random_exp):
+                # make sure that we are not comparing the same thing to each other.
+                if concept_set[0] != 'random500_{}'.format(
+                    i
+                ) and random_counterpart != 'random500_{}'.format(i):
+                    new_pairs_to_test_t.append((target, [concept_set[0], 'random500_{}'.format(i)]))
+                i += 1
+        elif len(concept_set) > 1:
+            new_pairs_to_test_t.append((target, concept_set))
+        else:
+            tf.logging.info('PAIR NOT PROCCESSED')
+        new_pairs_to_test.extend(new_pairs_to_test_t)
 
-  all_concepts = list(set(flatten([cs + [tc] for tc, cs in new_pairs_to_test])))
+    all_concepts = list(set(flatten([cs + [tc] for tc, cs in new_pairs_to_test])))
 
-  return all_concepts, new_pairs_to_test
+    return all_concepts, new_pairs_to_test
 
 
 def process_what_to_run_concepts(pairs_to_test):
-  """Process concepts and pairs to test.
+    """Process concepts and pairs to test.
 
   Args:
     pairs_to_test: a list of concepts to be tested and a target (e.g,
@@ -110,16 +108,16 @@ def process_what_to_run_concepts(pairs_to_test):
 
   """
 
-  pairs_for_sstesting = []
-  # prepare pairs for concpet vs random.
-  for pair in pairs_to_test:
-    for concept in pair[1]:
-      pairs_for_sstesting.append([pair[0], [concept]])
-  return pairs_for_sstesting
+    pairs_for_sstesting = []
+    # prepare pairs for concpet vs random.
+    for pair in pairs_to_test:
+        for concept in pair[1]:
+            pairs_for_sstesting.append([pair[0], [concept]])
+    return pairs_for_sstesting
 
 
 def process_what_to_run_randoms(pairs_to_test, random_counterpart):
-  """Process concepts and pairs to test.
+    """Process concepts and pairs to test.
 
   Args:
     pairs_to_test: a list of concepts to be tested and a target (e.g,
@@ -132,39 +130,39 @@ def process_what_to_run_randoms(pairs_to_test, random_counterpart):
           target2, random500_1,
           ...
   """
-  # prepare pairs for random vs random.
-  pairs_for_sstesting_random = []
-  targets = list(set([pair[0] for pair in pairs_to_test]))
-  for target in targets:
-    pairs_for_sstesting_random.append([target, [random_counterpart]])
-  return pairs_for_sstesting_random
+    # prepare pairs for random vs random.
+    pairs_for_sstesting_random = []
+    targets = list(set([pair[0] for pair in pairs_to_test]))
+    for target in targets:
+        pairs_for_sstesting_random.append([target, [random_counterpart]])
+    return pairs_for_sstesting_random
 
 
 # helper functions to write summary files
 def print_results(results):
-  """Helper function to organize results.
+    """Helper function to organize results.
 
   Args:
     results: dictionary of results from TCAV runs.
   """
-  result_summary = {'random': []}
-  for result in results:
-    if 'random' in result['cav_concept']:
-      result_summary['random'].append(result)
-    else:
-      if result['cav_concept'] not in result_summary:
-        result_summary[result['cav_concept']] = []
-      result_summary[result['cav_concept']].append(result)
-  random_i_ups = [item['i_up'] for item in result_summary['random']]
+    result_summary = {'random': []}
+    for result in results:
+        if 'random' in result['cav_concept']:
+            result_summary['random'].append(result)
+        else:
+            if result['cav_concept'] not in result_summary:
+                result_summary[result['cav_concept']] = []
+            result_summary[result['cav_concept']].append(result)
+    random_i_ups = [item['i_up'] for item in result_summary['random']]
 
-  for concept in result_summary:
-    if 'random' is not concept:
-      i_ups = [item['i_up'] for item in result_summary[concept]]
-      print '%s: TCAV score: %.2f (+- %.2f), random was %.2f' % (
-          concept, np.mean(i_ups), np.std(i_ups), np.mean(random_i_ups))
+    for concept in result_summary:
+        if 'random' is not concept:
+            i_ups = [item['i_up'] for item in result_summary[concept]]
+            print(
+                f'{concept}: TCAV score: {np.mean(i_ups):.2f} (+- {np.std(i_ups):2f}), random was {np.mean(random_i_ups):.2f}'
+            )
 
 
 def make_dir_if_not_exists(directory):
-  if not os.path.exists(directory):
-    os.makedirs(directory)
-
+    if not os.path.exists(directory):
+        os.makedirs(directory)

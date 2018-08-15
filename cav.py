@@ -27,15 +27,15 @@ import utils as utils
 
 
 class CAV(object):
-  """CAV class contains methods for concept activation vector (CAV).
+    """CAV class contains methods for concept activation vector (CAV).
 
   CAV represents semenatically meaningful vector directions in
   network's embeddings (bottlenecks).
   """
 
-  @staticmethod
-  def default_hparams():
-    """HParams used to train the CAV.
+    @staticmethod
+    def default_hparams():
+        """HParams used to train the CAV.
 
     you can use logistic regression or linear regression, or different
     regularization of the CAV parameters.
@@ -43,11 +43,11 @@ class CAV(object):
     Returns:
       TF.HParams for training.
     """
-    return tf.contrib.training.HParams(model_type='linear', alpha=.01)
+        return tf.contrib.training.HParams(model_type='linear', alpha=.01)
 
-  @staticmethod
-  def load_cav(cav_path):
-    """Make a CAV instance from a saved CAV (pickle file).
+    @staticmethod
+    def load_cav(cav_path):
+        """Make a CAV instance from a saved CAV (pickle file).
 
     Args:
       cav_path: the location of the saved CAV
@@ -55,18 +55,22 @@ class CAV(object):
     Returns:
       CAV instance.
     """
-    with open(cav_path) as pkl_file:
-      save_dict = pickle.load(pkl_file)
+        with open(cav_path) as pkl_file:
+            save_dict = pickle.load(pkl_file)
 
-    cav = CAV(save_dict['concepts'], save_dict['bottleneck'],
-              save_dict['hparams'], save_dict['saved_path'])
-    cav.accuracies = save_dict['accuracies']
-    cav.cavs = save_dict['cavs']
-    return cav
+        cav = CAV(
+            save_dict['concepts'],
+            save_dict['bottleneck'],
+            save_dict['hparams'],
+            save_dict['saved_path'],
+        )
+        cav.accuracies = save_dict['accuracies']
+        cav.cavs = save_dict['cavs']
+        return cav
 
-  @staticmethod
-  def cav_key(concepts, bottleneck, model_type, alpha):
-    """A key of this cav (useful for saving files).
+    @staticmethod
+    def cav_key(concepts, bottleneck, model_type, alpha):
+        """A key of this cav (useful for saving files).
 
     Args:
       concepts: set of concepts used for CAV
@@ -77,12 +81,19 @@ class CAV(object):
     Returns:
       a string cav_key
     """
-    return '-'.join([str(c) for c in concepts
-                    ]) + '-' + bottleneck + '-' + model_type + '-' + str(alpha)
+        return (
+            '-'.join([str(c) for c in concepts])
+            + '-'
+            + bottleneck
+            + '-'
+            + model_type
+            + '-'
+            + str(alpha)
+        )
 
-  @staticmethod
-  def check_cav_exists(cav_dir, concepts, bottleneck, cav_hparams):
-    """Check if a CAV is saved in cav_dir.
+    @staticmethod
+    def check_cav_exists(cav_dir, concepts, bottleneck, cav_hparams):
+        """Check if a CAV is saved in cav_dir.
 
     Args:
       cav_dir: where cav pickles might be saved
@@ -93,15 +104,15 @@ class CAV(object):
     Returns:
       True if exists, False otherwise.
     """
-    cav_path = os.path.join(
-        cav_dir,
-        CAV.cav_key(concepts, bottleneck, cav_hparams.model_type,
-                    cav_hparams.alpha) + '.pkl')
-    return os.path.exists(cav_path)
+        cav_path = os.path.join(
+            cav_dir,
+            CAV.cav_key(concepts, bottleneck, cav_hparams.model_type, cav_hparams.alpha) + '.pkl',
+        )
+        return os.path.exists(cav_path)
 
-  @staticmethod
-  def _create_cav_training_set(concepts, bottleneck, acts):
-    """Flattens acts, make mock-labels and returns the info.
+    @staticmethod
+    def _create_cav_training_set(concepts, bottleneck, acts):
+        """Flattens acts, make mock-labels and returns the info.
 
     Labels are assigned in the order that concepts exists.
 
@@ -115,26 +126,24 @@ class CAV(object):
         labels2text -  map between labels and text.
     """
 
-    x = []
-    labels = []
-    labels2text = {}
-    # to make sure postiive and negative examples are balanced,
-    # truncate all examples to the size of the smallest concept.
-    min_data_points = np.min(
-        [acts[concept][bottleneck].shape[0] for concept in acts.keys()])
+        x = []
+        labels = []
+        labels2text = {}
+        # to make sure postiive and negative examples are balanced,
+        # truncate all examples to the size of the smallest concept.
+        min_data_points = np.min([acts[concept][bottleneck].shape[0] for concept in acts.keys()])
 
-    for i, concept in enumerate(concepts):
-      x.extend(acts[concept][bottleneck][:min_data_points].reshape(
-          min_data_points, -1))
-      labels.extend([i] * min_data_points)
-      labels2text[i] = concept
-    x = np.array(x)
-    labels = np.array(labels)
+        for i, concept in enumerate(concepts):
+            x.extend(acts[concept][bottleneck][:min_data_points].reshape(min_data_points, -1))
+            labels.extend([i] * min_data_points)
+            labels2text[i] = concept
+        x = np.array(x)
+        labels = np.array(labels)
 
-    return x, labels, labels2text
+        return x, labels, labels2text
 
-  def __init__(self, concepts, bottleneck, hparams, save_path=None):
-    """Initialize CAV class.
+    def __init__(self, concepts, bottleneck, hparams, save_path=None):
+        """Initialize CAV class.
 
     Args:
       concepts: set of concepts used for CAV
@@ -142,13 +151,13 @@ class CAV(object):
       hparams: a parameter used to learn CAV
       save_path: where to save this CAV
     """
-    self.concepts = concepts
-    self.bottleneck = bottleneck
-    self.hparams = hparams
-    self.save_path = save_path
+        self.concepts = concepts
+        self.bottleneck = bottleneck
+        self.hparams = hparams
+        self.save_path = save_path
 
-  def train(self, acts):
-    """Train the CAVs from the activations.
+    def train(self, acts):
+        """Train the CAVs from the activations.
 
     Args:
       acts: is a dictionary of activations. In particular, acts takes for of
@@ -159,29 +168,27 @@ class CAV(object):
       ValueError: if the model_type in hparam is not compatible.
     """
 
-    tf.logging.info('training with alpha={}'.format(self.hparams.alpha))
-    x, labels, labels2text = CAV._create_cav_training_set(
-        self.concepts, self.bottleneck, acts)
+        tf.logging.info('training with alpha={}'.format(self.hparams.alpha))
+        x, labels, labels2text = CAV._create_cav_training_set(self.concepts, self.bottleneck, acts)
 
-    if self.hparams.model_type == 'linear':
-      lm = linear_model.SGDClassifier(alpha=self.hparams.alpha)
-    elif self.hparams.model_type == 'logistic':
-      lm = linear_model.LogisticRegression()
-    else:
-      raise ValueError('Invalid hparams.model_type: {}'.format(
-          self.hparams.model_type))
+        if self.hparams.model_type == 'linear':
+            lm = linear_model.SGDClassifier(alpha=self.hparams.alpha)
+        elif self.hparams.model_type == 'logistic':
+            lm = linear_model.LogisticRegression()
+        else:
+            raise ValueError('Invalid hparams.model_type: {}'.format(self.hparams.model_type))
 
-    self.accuracies = self._train_lm(lm, x, labels, labels2text)
-    if len(lm.coef_) == 1:
-      # if there were only two labels, the concept is assigned to label 0 by
-      # default. So we flip the coef_ to reflect this.
-      self.cavs = [-1 * lm.coef_[0], lm.coef_[0]]
-    else:
-      self.cavs = [c for c in lm.coef_]
-    self._save_cavs()
+        self.accuracies = self._train_lm(lm, x, labels, labels2text)
+        if len(lm.coef_) == 1:
+            # if there were only two labels, the concept is assigned to label 0 by
+            # default. So we flip the coef_ to reflect this.
+            self.cavs = [-1 * lm.coef_[0], lm.coef_[0]]
+        else:
+            self.cavs = [c for c in lm.coef_]
+        self._save_cavs()
 
-  def perturb_act(self, act, concept, operation=np.add, alpha=1.0):
-    """Make a perturbation of act with a direction of this CAV.
+    def perturb_act(self, act, concept, operation=np.add, alpha=1.0):
+        """Make a perturbation of act with a direction of this CAV.
 
     Args:
       act: activations to be perturbed
@@ -192,18 +199,19 @@ class CAV(object):
     Returns:
       perturbed activation: same shape as act
     """
-    flat_act = np.reshape(act, -1)
-    pert = operation(flat_act, alpha * self.get_direction(concept))
-    return np.reshape(pert, act.shape)
+        flat_act = np.reshape(act, -1)
+        pert = operation(flat_act, alpha * self.get_direction(concept))
+        return np.reshape(pert, act.shape)
 
-  def get_key(self):
-    """Returns cav_key."""
+    def get_key(self):
+        """Returns cav_key."""
 
-    return CAV.cav_key(self.concepts, self.bottleneck, self.hparams.model_type,
-                       self.hparams.alpha)
+        return CAV.cav_key(
+            self.concepts, self.bottleneck, self.hparams.model_type, self.hparams.alpha
+        )
 
-  def get_direction(self, concept):
-    """Get CAV direction.
+    def get_direction(self, concept):
+        """Get CAV direction.
 
     Args:
       concept: the conept of interest
@@ -211,26 +219,26 @@ class CAV(object):
     Returns:
       CAV vector.
     """
-    return self.cavs[self.concepts.index(concept)]
+        return self.cavs[self.concepts.index(concept)]
 
-  def _save_cavs(self):
-    """Save a dictionary of this CAV to a pickle."""
-    save_dict = {
-        'concepts': self.concepts,
-        'bottleneck': self.bottleneck,
-        'hparams': self.hparams,
-        'accuracies': self.accuracies,
-        'cavs': self.cavs,
-        'saved_path': self.save_path
-    }
-    if self.save_path is not None:
-      with open(self.save_path, 'w') as pkl_file:
-        pickle.dump(save_dict, pkl_file)
-    else:
-      tf.logging.info('save_path is None. Not saving anything')
+    def _save_cavs(self):
+        """Save a dictionary of this CAV to a pickle."""
+        save_dict = {
+            'concepts': self.concepts,
+            'bottleneck': self.bottleneck,
+            'hparams': self.hparams,
+            'accuracies': self.accuracies,
+            'cavs': self.cavs,
+            'saved_path': self.save_path,
+        }
+        if self.save_path is not None:
+            with open(self.save_path, 'w') as pkl_file:
+                pickle.dump(save_dict, pkl_file)
+        else:
+            tf.logging.info('save_path is None. Not saving anything')
 
-  def _train_lm(self, lm, x, y, labels2text):
-    """Train a model to get CAVs.
+    def _train_lm(self, lm, x, y, labels2text):
+        """Train a model to get CAVs.
 
     Modifies lm by calling the lm.fit functions. The cav coefficients are then
     in lm._coefs.
@@ -246,36 +254,29 @@ class CAV(object):
       Dictionary of accuracies of the CAVs.
 
     """
-    x_train, x_test, y_train, y_test = train_test_split(
-        x, y, test_size=0.33, stratify=y)
-    # if you get setting an array element with a sequence, chances are that your
-    # each of your activation had different shape - make sure they are all from
-    # the same layer, and input image size was the same
-    lm.fit(x_train, y_train)
-    y_pred = lm.predict(x_test)
-    # get acc for each class.
-    num_classes = max(y) + 1
-    acc = {}
-    num_correct = 0
-    for class_id in range(num_classes):
-      # get indices of all test data that has this class.
-      idx = (y_test == class_id)
-      acc[labels2text[class_id]] = metrics.accuracy_score(
-          y_pred[idx], y_test[idx])
-      # overall correctness is weighted by the number of examples in this class.
-      num_correct += (sum(idx) * acc[labels2text[class_id]])
-    acc['overall'] = float(num_correct) / float(len(y_test))
-    tf.logging.info('acc per class %s' % (str(acc)))
-    return acc
+        x_train, x_test, y_train, y_test = train_test_split(x, y, test_size=0.33, stratify=y)
+        # if you get setting an array element with a sequence, chances are that your
+        # each of your activation had different shape - make sure they are all from
+        # the same layer, and input image size was the same
+        lm.fit(x_train, y_train)
+        y_pred = lm.predict(x_test)
+        # get acc for each class.
+        num_classes = max(y) + 1
+        acc = {}
+        num_correct = 0
+        for class_id in range(num_classes):
+            # get indices of all test data that has this class.
+            idx = y_test == class_id
+            acc[labels2text[class_id]] = metrics.accuracy_score(y_pred[idx], y_test[idx])
+            # overall correctness is weighted by the number of examples in this class.
+            num_correct += sum(idx) * acc[labels2text[class_id]]
+        acc['overall'] = float(num_correct) / float(len(y_test))
+        tf.logging.info('acc per class %s' % (str(acc)))
+        return acc
 
 
-def get_or_train_cav(concepts,
-                     bottleneck,
-                     acts,
-                     cav_dir=None,
-                     cav_hparams=None,
-                     overwrite=False):
-  """Gets, creating and training if necessary, the specified CAV.
+def get_or_train_cav(concepts, bottleneck, acts, cav_dir=None, cav_hparams=None, overwrite=False):
+    """Gets, creating and training if necessary, the specified CAV.
 
   Assumes the activations already exists.
 
@@ -294,24 +295,26 @@ def get_or_train_cav(concepts,
     returns a CAV instance
   """
 
-  if cav_hparams is None:
-    cav_hparams = CAV.default_hparams()
+    if cav_hparams is None:
+        cav_hparams = CAV.default_hparams()
 
-  cav_path = None
-  if cav_dir is not None:
-    utils.make_dir_if_not_exists(cav_dir)
-    cav_path = os.path.join(
-        cav_dir,
-        CAV.cav_key(concepts, bottleneck, cav_hparams.model_type,
-                    cav_hparams.alpha).replace('/', '.') + '.pkl')
+    cav_path = None
+    if cav_dir is not None:
+        utils.make_dir_if_not_exists(cav_dir)
+        cav_path = os.path.join(
+            cav_dir,
+            CAV.cav_key(concepts, bottleneck, cav_hparams.model_type, cav_hparams.alpha).replace(
+                '/', '.'
+            )
+            + '.pkl',
+        )
 
-    if not overwrite and os.path.exists(cav_path):
-      tf.logging.info('CAV already exists: {}'.format(cav_path))
-      cav_instance = CAV.load_cav(cav_path)
-      return cav_instance
+        if not overwrite and os.path.exists(cav_path):
+            tf.logging.info('CAV already exists: {}'.format(cav_path))
+            cav_instance = CAV.load_cav(cav_path)
+            return cav_instance
 
-  tf.logging.info('Training CAV {} - {} alpha {}'.format(
-      concepts, bottleneck, cav_hparams.alpha))
-  cav_instance = CAV(concepts, bottleneck, cav_hparams, cav_path)
-  cav_instance.train({c: acts[c] for c in concepts})
-  return cav_instance
+    tf.logging.info('Training CAV {} - {} alpha {}'.format(concepts, bottleneck, cav_hparams.alpha))
+    cav_instance = CAV(concepts, bottleneck, cav_hparams, cav_path)
+    cav_instance.train({c: acts[c] for c in concepts})
+    return cav_instance
