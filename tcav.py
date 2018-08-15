@@ -29,7 +29,7 @@ import tensorflow as tf
 import utils
 
 
-class TCAV(object):
+class TCAV:
     """TCAV object: runs TCAV for one target and a set of concepts.
   The static methods (get_direction_dir_sign, compute_tcav_score,
   get_directional_dir) invole getting directional derivatives and calculating

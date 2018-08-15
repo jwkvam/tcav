@@ -26,7 +26,7 @@ import tensorflow as tf
 import utils as utils
 
 
-class CAV(object):
+class CAV:
     """CAV class contains methods for concept activation vector (CAV).
 
   CAV represents semenatically meaningful vector directions in

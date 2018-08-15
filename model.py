@@ -22,7 +22,7 @@ import numpy as np
 import tensorflow as tf
 
 
-class ModelWrapper(object):
+class ModelWrapper:
     """Simple wrapper of the for models with session object for TCAV.
 
     Supports easy inference with no need to deal with the feed_dicts.
@@ -49,8 +49,7 @@ class ModelWrapper(object):
         self.loss = None
 
     def _make_gradient_tensors(self):
-        """Makes gradient tensors for all bottleneck tensors.
-    """
+        """Makes gradient tensors for all bottleneck tensors."""
         self.bottlenecks_gradients = {}
         for bn in self.bottlenecks_tensors:
             self.bottlenecks_gradients[bn] = tf.gradients(self.loss, self.bottlenecks_tensors[bn])[

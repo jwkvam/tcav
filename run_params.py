@@ -17,7 +17,7 @@ limitations under the License.
 """A simple class to take care of various parameters for TCAV."""
 
 
-class RunParams(object):
+class RunParams:
     """Run parameters for TCAV."""
 
     def __init__(
